@@ -10,9 +10,12 @@ import {
   Layers,
   CheckCircle2,
   FileSearch,
+  LineChart,
+  Target
 } from 'lucide-react'
 import Link from 'next/link'
 import { TrustBadge } from '@/components/ui/TrustBadge'
+import { SourcingChart } from '@/components/ui/SourcingChart'
 
 export const dynamic = 'force-dynamic'
 
@@ -281,6 +284,68 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* S1 & S2: Intelligence Panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* S1: Compensation & Location Benchmark */}
+        <div className="talentos-card">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                <Target size={13} />
+              </div>
+              <h3 className="text-sm font-bold text-[#0F172A]">Market Benchmark Intelligence</h3>
+            </div>
+            <SimulatedBadge label="External Oracle" />
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#0F172A]">React Developer (Chennai)</span>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Target: ₹12L</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1 relative mt-4">
+                <div className="absolute top-[-14px] left-[30%] text-[9px] text-slate-500 font-bold">₹8L (Min)</div>
+                <div className="absolute top-[-14px] left-[70%] text-[9px] text-slate-500 font-bold">₹15L (Max)</div>
+                <div className="bg-[#C9A227] h-1.5 rounded-full absolute left-[30%] right-[30%]"></div>
+                <div className="absolute w-2 h-3 bg-[#0B1B3A] left-[50%] top-[-3px] rounded-sm shadow-sm"></div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2 text-center">Your budget (₹12L) is in the 50th percentile for this region.</p>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#0F172A]">QA Lead (Remote)</span>
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Target: ₹10L</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1 relative mt-4">
+                <div className="absolute top-[-14px] left-[20%] text-[9px] text-slate-500 font-bold">₹9L (Min)</div>
+                <div className="absolute top-[-14px] left-[80%] text-[9px] text-slate-500 font-bold">₹18L (Max)</div>
+                <div className="bg-amber-400 h-1.5 rounded-full absolute left-[20%] right-[20%]"></div>
+                <div className="absolute w-2 h-3 bg-red-600 left-[25%] top-[-3px] rounded-sm shadow-sm"></div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2 text-center">Your budget (₹10L) is in the bottom 25th percentile. Expect lower fill rates.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* S2: Sourcing Channel Conversion Chart */}
+        <div className="talentos-card">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+                <LineChart size={13} />
+              </div>
+              <h3 className="text-sm font-bold text-[#0F172A]">Channel Conversion Intelligence</h3>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mb-2">Average hiring probability match rates broken down by sourcing channel.</p>
+          <SourcingChart />
+        </div>
+
       </div>
     </div>
   )
