@@ -270,11 +270,10 @@ export async function seedDemoDataAction() {
       })
     }
 
-    // 1. Create Requisitions
+    // 1. Create Requisitions (only fields that exist in schema)
     const req1 = await prisma.requisition.create({
       data: {
         title: 'Senior React Developer',
-        department: 'Engineering',
         location: 'Chennai',
         employment_type: 'FTE',
         skills: ['React', 'TypeScript', 'Node.js', 'GraphQL'],
@@ -288,7 +287,6 @@ export async function seedDemoDataAction() {
     const req2 = await prisma.requisition.create({
       data: {
         title: 'QA Lead — Automation',
-        department: 'Quality',
         location: 'Bangalore',
         employment_type: 'Contract',
         skills: ['Selenium', 'Cypress', 'Jest', 'Python'],
@@ -299,30 +297,33 @@ export async function seedDemoDataAction() {
     })
     await writeLog('REQUISITION_CREATED', 'requisition', req2.id, { title: req2.title })
 
-    // 2. Create Candidates
-    const candidates = [
-      { full_name: 'Priya Ramachandran', email: 'priya.r@synthetic.demo', source_channel: 'Internal', linkedin_url: 'https://linkedin.com/in/priya-r-demo', current_title: 'React Developer III', years_exp: 6, skills: ['React', 'TypeScript', 'GraphQL', 'Node.js'] },
-      { full_name: 'Arjun Mehta', email: 'arjun.m@synthetic.demo', source_channel: 'Contractor', linkedin_url: 'https://linkedin.com/in/arjun-m-demo', current_title: 'Frontend Tech Lead', years_exp: 8, skills: ['React', 'Vue', 'TypeScript', 'AWS'] },
-      { full_name: 'Kavitha Subramaniam', email: 'kavitha.s@synthetic.demo', source_channel: 'Referral', linkedin_url: 'https://linkedin.com/in/kavitha-s-demo', current_title: 'QA Automation Engineer', years_exp: 5, skills: ['Selenium', 'Cypress', 'Python', 'Jenkins'] },
-      { full_name: 'Rohan Desai', email: 'rohan.d@synthetic.demo', source_channel: 'External', linkedin_url: 'https://linkedin.com/in/rohan-d-demo', current_title: 'Full Stack Developer', years_exp: 4, skills: ['React', 'Node.js', 'MongoDB', 'Docker'] },
-      { full_name: 'Sneha Iyer', email: 'sneha.i@synthetic.demo', source_channel: 'Agency', linkedin_url: 'https://linkedin.com/in/sneha-i-demo', current_title: 'Software Engineer II', years_exp: 3, skills: ['JavaScript', 'React', 'CSS', 'REST APIs'] },
+    // 2. Create Candidates (only schema fields: full_name, email, phone, location, pool_type, source_channel, resume_text, expected_comp)
+    const candidatesData = [
+      { full_name: 'Priya Ramachandran', email: 'priya.r@synthetic.demo', pool_type: 'internal', source_channel: 'Internal', location: 'Chennai', expected_comp: 1400000, resume_text: 'Senior React Developer with 6 years experience in TypeScript, GraphQL, Node.js. Currently employed as React Developer III.' },
+      { full_name: 'Arjun Mehta', email: 'arjun.m@synthetic.demo', pool_type: 'contractor', source_channel: 'Contractor', location: 'Bangalore', expected_comp: 1600000, resume_text: 'Frontend Tech Lead with 8 years experience in React, Vue, TypeScript, AWS. Available for contract engagements.' },
+      { full_name: 'Kavitha Subramaniam', email: 'kavitha.s@synthetic.demo', pool_type: 'internal', source_channel: 'Referral', location: 'Bangalore', expected_comp: 1100000, resume_text: 'QA Automation Engineer with 5 years experience in Selenium, Cypress, Python, Jenkins. Strong referral from Manager.' },
+      { full_name: 'Rohan Desai', email: 'rohan.d@synthetic.demo', pool_type: 'external', source_channel: 'External', location: 'Mumbai', expected_comp: 1000000, resume_text: 'Full Stack Developer with 4 years experience in React, Node.js, MongoDB, Docker. Open to relocation.' },
+      { full_name: 'Sneha Iyer', email: 'sneha.i@synthetic.demo', pool_type: 'external', source_channel: 'Agency', location: 'Hyderabad', expected_comp: 850000, resume_text: 'Software Engineer II with 3 years experience in JavaScript, React, CSS, REST APIs.' },
     ]
 
-    const createdCandidates = []
-    for (const c of candidates) {
-      const cand = await prisma.candidate.create({ data: { ...c, skills: c.skills } })
+    const createdCandidates: { id: string; full_name: string }[] = []
+    for (const c of candidatesData) {
+      const cand = await prisma.candidate.create({ data: c })
       await writeLog('CANDIDATE_INGESTED', 'candidate', cand.id, { name: cand.full_name, source: cand.source_channel })
 
-      // Create Trust Passport
+      // TrustPassport schema: candidate_id, payload (Json), signature (String)
       const trustScore = Math.floor(70 + Math.random() * 28)
       await prisma.trustPassport.create({
         data: {
           candidate_id: cand.id,
-          identity_verified: trustScore > 85,
-          credential_verified: trustScore > 78,
-          duplicate_checked: true,
-          assessment_score: Math.floor(60 + Math.random() * 38),
-          overall_score: trustScore,
+          payload: {
+            identity_verified: trustScore > 85,
+            credential_verified: trustScore > 78,
+            duplicate_checked: true,
+            assessment_score: Math.floor(60 + Math.random() * 38),
+            overall_score: trustScore,
+          } as InputJsonValue,
+          signature: `sha256:${Math.random().toString(36).slice(2)}`,
         }
       })
       createdCandidates.push(cand)
@@ -335,39 +336,42 @@ export async function seedDemoDataAction() {
         candidate_id: flaggedCandidate.id,
         type: 'DUPLICATE_PROFILE',
         severity: 'high',
-        evidence: { reason: 'Identical LinkedIn profile URL found in agency pool submitted 3 days prior under name "S. Iyer". Employment dates contradict public GitHub commits.' } as InputJsonValue,
+        evidence: { reason: 'Identical profile submitted via Agency 3 days prior under name "S. Iyer". Employment dates contradict public GitHub commits.' } as InputJsonValue,
       }
     })
     await writeLog('FRAUD_SIGNAL_DETECTED', 'candidate', flaggedCandidate.id, { type: 'DUPLICATE_PROFILE', severity: 'high' })
 
-    // 4. Create Matches (candidate ↔ requisition scoring)
+    // 4. Create MatchScores — model is "matchScore", fields: requisition_id, candidate_id, skill_match, trust_score, comp_fit, probability, signals
     const matchData = [
-      { candidateIdx: 0, reqId: req1.id, probability: 0.94, recommendation: 'Borrow', signals: ['6 yrs exp', 'All 4 skills match', 'Internal pool', 'React certified'] },
-      { candidateIdx: 1, reqId: req1.id, probability: 0.87, recommendation: 'Buy', signals: ['8 yrs exp', '3/4 skills match', 'Contractor available immediately'] },
-      { candidateIdx: 3, reqId: req1.id, probability: 0.71, recommendation: 'Buy', signals: ['4 yrs exp', '2/4 skills match', 'External — higher risk'] },
-      { candidateIdx: 2, reqId: req2.id, probability: 0.91, recommendation: 'Borrow', signals: ['5 yrs exp', 'All skills match', 'Referral — high trust'] },
+      { candidateIdx: 0, reqId: req1.id, probability: 0.94, skill_match: 0.98, trust_score: 96, comp_fit: 0.85, signals: { reasons: ['6 yrs exp', 'All 4 skills match', 'Internal pool', 'High trust score'] } },
+      { candidateIdx: 1, reqId: req1.id, probability: 0.87, skill_match: 0.82, trust_score: 88, comp_fit: 0.70, signals: { reasons: ['8 yrs exp', '3/4 skills match', 'Contractor — available immediately'] } },
+      { candidateIdx: 3, reqId: req1.id, probability: 0.71, skill_match: 0.65, trust_score: 74, comp_fit: 0.90, signals: { reasons: ['4 yrs exp', '2/4 skills match', 'External — higher onboarding risk'] } },
+      { candidateIdx: 2, reqId: req2.id, probability: 0.91, skill_match: 0.95, trust_score: 92, comp_fit: 0.88, signals: { reasons: ['5 yrs exp', 'All skills match', 'Referral — high trust channel'] } },
     ]
 
     for (const m of matchData) {
-      await prisma.requisitionMatch.create({
+      await prisma.matchScore.create({
         data: {
-          req_id: m.reqId,
+          requisition_id: m.reqId,
           candidate_id: createdCandidates[m.candidateIdx].id,
           probability: m.probability,
-          recommendation: m.recommendation,
-          signals: m.signals,
+          skill_match: m.skill_match,
+          trust_score: m.trust_score,
+          comp_fit: m.comp_fit,
+          signals: m.signals as InputJsonValue,
         }
       })
-      await writeLog('CANDIDATE_SCORED', 'match', `${m.reqId}:${createdCandidates[m.candidateIdx].id}`, { probability: m.probability, recommendation: m.recommendation })
+      await writeLog('CANDIDATE_SCORED', 'match_score', `${m.reqId}:${createdCandidates[m.candidateIdx].id}`, { probability: m.probability })
     }
 
-    // 5. Create Agent runs + Pending Approvals
+    // 5. Create Agent run + Pending Approval (Approval has: agent_run_id, state, approver_id (optional), reason, decided_at)
     const agentRun = await prisma.agentRun.create({
       data: {
         agent: 'Outreach Copilot',
         candidate_id: createdCandidates[0].id,
-        input: { task: 'draft_outreach', requisition: req1.title } as InputJsonValue,
-        output: { draft: `Hi Priya, We reviewed your profile for our Senior React Developer role in Chennai (₹12-18L). Your Trust Score of 94% and 6 years of React experience make you our top match. Would you be open to a quick call this week? — TalentOS Copilot` } as InputJsonValue,
+        requisition_id: req1.id,
+        input: { task: 'draft_outreach', candidate: createdCandidates[0].full_name } as InputJsonValue,
+        output: { draft: `Hi Priya, we reviewed your profile for our Senior React Developer role in Chennai (₹12-18L). Your profile score of 94% and 6 years of React experience make you our top match. Would you be open to a quick call this week? — TalentOS Copilot` } as InputJsonValue,
         status: 'pending_approval',
       }
     })
@@ -376,7 +380,6 @@ export async function seedDemoDataAction() {
       data: {
         agent_run_id: agentRun.id,
         state: 'pending',
-        actor: 'recruiter:demo',
       }
     })
     await writeLog('OUTREACH_DRAFTED', 'agent_run', agentRun.id, { candidate: createdCandidates[0].full_name, agent: 'Outreach Copilot' })
@@ -388,7 +391,7 @@ export async function seedDemoDataAction() {
     revalidatePath('/approvals')
     revalidatePath('/audit')
 
-    return { success: true, message: `Seeded 5 candidates, 2 requisitions, fraud signals, matches & approvals.` }
+    return { success: true, message: 'Seeded 5 candidates, 2 requisitions, fraud signals, matches & approvals.' }
   } catch (err) {
     console.error('Seed error:', err)
     return { success: false, message: String(err) }
