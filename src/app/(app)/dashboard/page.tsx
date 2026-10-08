@@ -14,6 +14,8 @@ import {
 import Link from 'next/link'
 import { TrustBadge } from '@/components/ui/TrustBadge'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const [
     reqCount,

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { MapPin, Briefcase, Users, ArrowRight, ShieldAlert, Plus, Sparkles, Building2 } from 'lucide-react'
 import { SimulatedBadge } from '@/components/ui/SimulatedBadge'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RequisitionsPage() {
   const requisitions = await prisma.requisition.findMany({
     orderBy: { created_at: 'desc' },

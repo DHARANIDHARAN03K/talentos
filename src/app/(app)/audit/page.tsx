@@ -4,6 +4,8 @@ import { verifyChain } from '@/lib/audit'
 import { ScrollText, ShieldCheck } from 'lucide-react'
 
 
+export const dynamic = 'force-dynamic'
+
 export default async function AuditPage() {
   const auditLogs = await prisma.auditLog.findMany({
     orderBy: { ts: 'desc' },
