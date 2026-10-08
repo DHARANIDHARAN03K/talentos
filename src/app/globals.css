@@ -1,52 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 
-/* ─── Tailwind v4 CSS Theme: Design Tokens from 04_DESIGN.md ─── */
+/* ─── Tailwind v4 CSS Theme: Professional SaaS Tokens ─── */
 @theme {
   /* Surface & Base */
   --color-surface: #F8FAFC;
   --color-surface-subtle: #F1F5F9;
   --color-card: #FFFFFF;
 
-  /* Brand Palette (Navy & Gold) */
-  --color-navy-950: #071126;
-  --color-navy-900: #0B1B3A;
-  --color-navy-800: #102A56;
-  --color-navy-700: #16305F;
+  /* Brand Palette (Navy & Gold) - Deepened for Enterprise Feel */
+  --color-navy-950: #040B16;
+  --color-navy-900: #0A192F;
+  --color-navy-800: #112240;
+  --color-navy-700: #233554;
   --color-gold-500: #C9A227;
   --color-gold-600: #A88316;
 
-  /* Text & Contrast (WCAG AA 4.5:1 compliant on --surface) */
-  --color-ink: #0F172A;
-  --color-muted: #64748B;
+  /* Text & Contrast (WCAG AA) */
+  --color-ink: #0B1120;
+  --color-muted: #475569;
   --color-ink-faint: #94A3B8;
 
-  /* Functional Status Tokens */
-  --color-trust-green: #16A34A;
-  --color-review-amber: #D97706;
-  --color-risk-red: #DC2626;
-  --color-info-blue: #2563EB;
+  /* Functional Status Tokens - Slightly desaturated for professional look */
+  --color-trust-green: #15803D;
+  --color-review-amber: #B45309;
+  --color-risk-red: #B91C1C;
+  --color-info-blue: #1D4ED8;
 
   /* Border */
   --color-border: #E2E8F0;
-  --color-border-subtle: #EDF2F7;
+  --color-border-subtle: #F1F5F9;
 
   /* Fonts */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Shadows */
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
-  --shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 0.10);
-  --shadow-soft: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-elevated: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  /* Shadows - Sharper, less floaty */
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
 
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-DEFAULT: 0.5rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Border Radius - Sharper for enterprise feel */
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 }
 
 /* ─── Base Reset & Typography ─── */
@@ -60,99 +59,100 @@ html, body {
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
-  letter-spacing: -0.011em;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Layer-cake scanning typography — 3 tiers (header/subheader/body) */
+/* Strict Typography Hierarchy */
 h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   color: var(--color-ink);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   font-size: 1.25rem;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--color-ink);
   letter-spacing: -0.02em;
 }
 
 h3 {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.4;
   color: var(--color-ink);
-  letter-spacing: -0.015em;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
 /* Monospace data tokens */
 code, pre, .font-mono {
   font-family: var(--font-mono);
+  font-size: 0.8125rem;
 }
 
 /* ─── Reusable Component Classes ─── */
 
-/* Enterprise Card — calm density, subtle shadow, clear boundary */
+/* Enterprise Card — strict boundaries, minimal shadow */
 .talentos-card {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
-  padding: 1.25rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
 }
 
 .talentos-card:hover {
   border-color: #CBD5E1;
-  box-shadow: var(--shadow-elevated);
+  box-shadow: var(--shadow-card-hover);
 }
 
-/* ─── Status Badges (tinted bg + dark text + border, never colour alone) ─── */
+/* ─── Status Badges ─── */
 .badge-verified {
   background-color: #F0FDF4;
   border: 1px solid #BBF7D0;
-  color: #15803D;
+  color: #166534;
 }
 
 .badge-review {
   background-color: #FFFBEB;
   border: 1px solid #FDE68A;
-  color: #B45309;
+  color: #92400E;
 }
 
 .badge-flagged {
   background-color: #FEF2F2;
   border: 1px solid #FECACA;
-  color: #B91C1C;
+  color: #991B1B;
 }
 
 .badge-info {
   background-color: #EFF6FF;
   border: 1px solid #BFDBFE;
-  color: #1D4ED8;
+  color: #1E40AF;
 }
 
 /* Audit hash mono display */
 .audit-hash {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--color-muted);
   word-break: break-all;
   line-height: 1.4;
 }
 
-/* Focus ring consistent across all interactive elements */
 :focus-visible {
   outline: 2px solid var(--color-navy-900);
   outline-offset: 2px;
 }
 
-/* Scrollbar refinement for sidebar */
+/* Scrollbar refinement */
 .sidebar-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -168,7 +168,7 @@ code, pre, .font-mono {
 
 /* Table row hover transition */
 .table-row-hover {
-  transition: background-color 0.1s ease;
+  transition: background-color 0.15s ease;
 }
 
 .table-row-hover:hover {

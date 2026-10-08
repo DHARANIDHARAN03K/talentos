@@ -30,16 +30,17 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-[#071126] text-white flex flex-col z-30 border-r border-slate-800">
       {/* Brand Header */}
-      <div className="px-5 py-4 border-b border-slate-800 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#0B1B3A] border border-[#C9A227]/40 flex items-center justify-center text-[#C9A227] shadow-sm">
-          <ShieldCheck size={18} />
+      <div className="px-5 py-5 border-b border-slate-800/80 flex items-center gap-3">
+        <div className="w-9 h-9 rounded bg-gradient-to-br from-[#0B1B3A] to-[#16305F] border border-slate-700/50 flex items-center justify-center text-white shadow-sm relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+          <ShieldCheck size={20} className="text-white drop-shadow-sm" strokeWidth={1.5} />
         </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-base tracking-tight text-white">Talent</span>
-            <span className="font-bold text-base tracking-tight text-[#C9A227]">OS</span>
+        <div className="flex flex-col">
+          <div className="flex items-baseline gap-0.5">
+            <span className="font-bold text-[17px] tracking-tight text-white leading-none">Talent</span>
+            <span className="font-semibold text-[17px] tracking-tight text-[#C9A227] leading-none">OS</span>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium tracking-wide uppercase">Trust · Intel · Execution</p>
+          <p className="text-[9px] text-slate-400 font-medium tracking-widest uppercase mt-1 leading-none">Operating System</p>
         </div>
       </div>
 

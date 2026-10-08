@@ -15,6 +15,7 @@ import {
 import { SimulatedBadge } from '@/components/ui/SimulatedBadge'
 import { TrustBadge } from '@/components/ui/TrustBadge'
 import Link from 'next/link'
+import { explainDecision } from '@/lib/ai'
 
 interface DecisionsPageProps {
   searchParams: Promise<{ reqId?: string }>
@@ -38,6 +39,13 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
       },
     },
   })
+
+  const matchesWithExplanation = activeReq ? await Promise.all(
+    activeReq.matches.map(async (match) => {
+      const explanation = await explainDecision(match.candidate.full_name, activeReq.title, match.signals)
+      return { ...match, explanation }
+    })
+  ) : []
 
   return (
     <div className="space-y-8">
@@ -83,7 +91,7 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
       {activeReq && (
         <div className="space-y-6">
           {/* BBBAR Recommendation Card */}
-          <div className="talentos-card bg-gradient-to-br from-white via-slate-50 to-amber-50/30 border-slate-200">
+          <div className="talentos-card bg-white border-slate-200 shadow-sm">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
               <div>
                 <div className="flex items-center gap-2">
@@ -154,7 +162,7 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
             </div>
 
             <div className="divide-y divide-slate-200">
-              {activeReq.matches.map((match) => {
+              {matchesWithExplanation.map((match) => {
                 const signals = match.signals as {
                   skill_match?: number
                   trust_score?: number
@@ -190,6 +198,11 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                         </div>
                         <p className="text-[10px] font-semibold text-slate-400 uppercase">Hiring Probability</p>
                       </div>
+                    </div>
+
+                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-xs text-slate-600 mt-2">
+                       <span className="font-semibold text-slate-700 flex items-center gap-1.5 mb-1"><Sparkles size={13} className="text-[#C9A227]"/> AI Rationale</span>
+                       {match.explanation}
                     </div>
 
                     {/* Signal Breakdown Bars */}

@@ -125,7 +125,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* 3-Layer Visual Pipeline: Trust, Intel, Execution */}
-      <div className="talentos-card bg-gradient-to-r from-slate-50 via-white to-slate-50 border-slate-200">
+      <div className="talentos-card bg-white border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <Layers size={14} className="text-[#0B1B3A]" />
