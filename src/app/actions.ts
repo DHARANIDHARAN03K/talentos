@@ -247,3 +247,150 @@ export async function askCopilotAction(query: string) {
     return { response: "[Error] Failed to connect to intelligence layer. Using deterministic fallback." }
   }
 }
+
+/**
+ * 5. SEED DEMO DATA — Populates the DB with realistic candidates, requisitions, and audit events
+ * Safe to call multiple times — only seeds if data is sparse.
+ */
+export async function seedDemoDataAction() {
+  try {
+    const existingCount = await prisma.candidate.count()
+    if (existingCount >= 5) {
+      return { success: true, message: 'Demo data already seeded.' }
+    }
+
+    // Helper to write audit rows
+    const writeLog = async (action: string, entityType: string, entityId: string, payload: Record<string, unknown>) => {
+      const ts = new Date().toISOString()
+      const last = await prisma.auditLog.findFirst({ orderBy: { id: 'desc' } })
+      const prevHash = last?.hash ?? ''
+      const hash = computeHash(prevHash, ts, 'agent', 'seed-agent', action, entityType, entityId, payload)
+      await prisma.auditLog.create({
+        data: { ts: new Date(ts), actor_type: 'agent', actor_id: 'seed-agent', action, entity_type: entityType, entity_id: entityId, payload: payload as InputJsonValue, prev_hash: prevHash, hash }
+      })
+    }
+
+    // 1. Create Requisitions
+    const req1 = await prisma.requisition.create({
+      data: {
+        title: 'Senior React Developer',
+        department: 'Engineering',
+        location: 'Chennai',
+        employment_type: 'FTE',
+        skills: ['React', 'TypeScript', 'Node.js', 'GraphQL'],
+        comp_min: 1200000,
+        comp_max: 1800000,
+        status: 'open',
+      }
+    })
+    await writeLog('REQUISITION_CREATED', 'requisition', req1.id, { title: req1.title })
+
+    const req2 = await prisma.requisition.create({
+      data: {
+        title: 'QA Lead — Automation',
+        department: 'Quality',
+        location: 'Bangalore',
+        employment_type: 'Contract',
+        skills: ['Selenium', 'Cypress', 'Jest', 'Python'],
+        comp_min: 900000,
+        comp_max: 1400000,
+        status: 'open',
+      }
+    })
+    await writeLog('REQUISITION_CREATED', 'requisition', req2.id, { title: req2.title })
+
+    // 2. Create Candidates
+    const candidates = [
+      { full_name: 'Priya Ramachandran', email: 'priya.r@synthetic.demo', source_channel: 'Internal', linkedin_url: 'https://linkedin.com/in/priya-r-demo', current_title: 'React Developer III', years_exp: 6, skills: ['React', 'TypeScript', 'GraphQL', 'Node.js'] },
+      { full_name: 'Arjun Mehta', email: 'arjun.m@synthetic.demo', source_channel: 'Contractor', linkedin_url: 'https://linkedin.com/in/arjun-m-demo', current_title: 'Frontend Tech Lead', years_exp: 8, skills: ['React', 'Vue', 'TypeScript', 'AWS'] },
+      { full_name: 'Kavitha Subramaniam', email: 'kavitha.s@synthetic.demo', source_channel: 'Referral', linkedin_url: 'https://linkedin.com/in/kavitha-s-demo', current_title: 'QA Automation Engineer', years_exp: 5, skills: ['Selenium', 'Cypress', 'Python', 'Jenkins'] },
+      { full_name: 'Rohan Desai', email: 'rohan.d@synthetic.demo', source_channel: 'External', linkedin_url: 'https://linkedin.com/in/rohan-d-demo', current_title: 'Full Stack Developer', years_exp: 4, skills: ['React', 'Node.js', 'MongoDB', 'Docker'] },
+      { full_name: 'Sneha Iyer', email: 'sneha.i@synthetic.demo', source_channel: 'Agency', linkedin_url: 'https://linkedin.com/in/sneha-i-demo', current_title: 'Software Engineer II', years_exp: 3, skills: ['JavaScript', 'React', 'CSS', 'REST APIs'] },
+    ]
+
+    const createdCandidates = []
+    for (const c of candidates) {
+      const cand = await prisma.candidate.create({ data: { ...c, skills: c.skills } })
+      await writeLog('CANDIDATE_INGESTED', 'candidate', cand.id, { name: cand.full_name, source: cand.source_channel })
+
+      // Create Trust Passport
+      const trustScore = Math.floor(70 + Math.random() * 28)
+      await prisma.trustPassport.create({
+        data: {
+          candidate_id: cand.id,
+          identity_verified: trustScore > 85,
+          credential_verified: trustScore > 78,
+          duplicate_checked: true,
+          assessment_score: Math.floor(60 + Math.random() * 38),
+          overall_score: trustScore,
+        }
+      })
+      createdCandidates.push(cand)
+    }
+
+    // 3. Flag one candidate with a fraud signal
+    const flaggedCandidate = createdCandidates[4]
+    await prisma.fraudSignal.create({
+      data: {
+        candidate_id: flaggedCandidate.id,
+        type: 'DUPLICATE_PROFILE',
+        severity: 'high',
+        evidence: { reason: 'Identical LinkedIn profile URL found in agency pool submitted 3 days prior under name "S. Iyer". Employment dates contradict public GitHub commits.' } as InputJsonValue,
+      }
+    })
+    await writeLog('FRAUD_SIGNAL_DETECTED', 'candidate', flaggedCandidate.id, { type: 'DUPLICATE_PROFILE', severity: 'high' })
+
+    // 4. Create Matches (candidate ↔ requisition scoring)
+    const matchData = [
+      { candidateIdx: 0, reqId: req1.id, probability: 0.94, recommendation: 'Borrow', signals: ['6 yrs exp', 'All 4 skills match', 'Internal pool', 'React certified'] },
+      { candidateIdx: 1, reqId: req1.id, probability: 0.87, recommendation: 'Buy', signals: ['8 yrs exp', '3/4 skills match', 'Contractor available immediately'] },
+      { candidateIdx: 3, reqId: req1.id, probability: 0.71, recommendation: 'Buy', signals: ['4 yrs exp', '2/4 skills match', 'External — higher risk'] },
+      { candidateIdx: 2, reqId: req2.id, probability: 0.91, recommendation: 'Borrow', signals: ['5 yrs exp', 'All skills match', 'Referral — high trust'] },
+    ]
+
+    for (const m of matchData) {
+      await prisma.requisitionMatch.create({
+        data: {
+          req_id: m.reqId,
+          candidate_id: createdCandidates[m.candidateIdx].id,
+          probability: m.probability,
+          recommendation: m.recommendation,
+          signals: m.signals,
+        }
+      })
+      await writeLog('CANDIDATE_SCORED', 'match', `${m.reqId}:${createdCandidates[m.candidateIdx].id}`, { probability: m.probability, recommendation: m.recommendation })
+    }
+
+    // 5. Create Agent runs + Pending Approvals
+    const agentRun = await prisma.agentRun.create({
+      data: {
+        agent: 'Outreach Copilot',
+        candidate_id: createdCandidates[0].id,
+        input: { task: 'draft_outreach', requisition: req1.title } as InputJsonValue,
+        output: { draft: `Hi Priya, We reviewed your profile for our Senior React Developer role in Chennai (₹12-18L). Your Trust Score of 94% and 6 years of React experience make you our top match. Would you be open to a quick call this week? — TalentOS Copilot` } as InputJsonValue,
+        status: 'pending_approval',
+      }
+    })
+
+    await prisma.approval.create({
+      data: {
+        agent_run_id: agentRun.id,
+        state: 'pending',
+        actor: 'recruiter:demo',
+      }
+    })
+    await writeLog('OUTREACH_DRAFTED', 'agent_run', agentRun.id, { candidate: createdCandidates[0].full_name, agent: 'Outreach Copilot' })
+
+    revalidatePath('/')
+    revalidatePath('/dashboard')
+    revalidatePath('/pool')
+    revalidatePath('/decisions')
+    revalidatePath('/approvals')
+    revalidatePath('/audit')
+
+    return { success: true, message: `Seeded 5 candidates, 2 requisitions, fraud signals, matches & approvals.` }
+  } catch (err) {
+    console.error('Seed error:', err)
+    return { success: false, message: String(err) }
+  }
+}

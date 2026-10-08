@@ -16,6 +16,7 @@ import {
 import Link from 'next/link'
 import { TrustBadge } from '@/components/ui/TrustBadge'
 import { SourcingChart } from '@/components/ui/SourcingChart'
+import { SeedDemoButton } from '@/components/ui/SeedDemoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -82,7 +83,20 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+
+      {/* Seed Banner — only visible when DB is empty */}
+      {candidateCount < 5 && (
+        <div className="bg-[#0B1B3A] border border-[#C9A227]/30 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-white">Demo database is empty</p>
+            <p className="text-xs text-slate-400 mt-0.5">Click to seed 5 synthetic candidates, requisitions, fraud signals, matches &amp; approvals — all with a full audit trail.</p>
+          </div>
+          <SeedDemoButton />
+        </div>
+      )}
+
       {/* Hero Overview - F-Pattern Anchor: Headline + 1-Line Value Proposition */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
