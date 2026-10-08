@@ -1,5 +1,6 @@
-import { Copy, CheckCircle2, XCircle } from 'lucide-react'
+'use client'
 
+import { Copy, CheckCircle2, XCircle } from 'lucide-react'
 interface AuditRowProps {
   id: number
   ts: string
