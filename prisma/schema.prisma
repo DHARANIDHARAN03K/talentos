@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id         String   @id @db.Uuid
+  role       String
+  name       String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  
+  requisitions Requisition[]
+  approvals    Approval[]
+  
+  @@map("profiles")
+}
+
+model Requisition {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String
+  location          String
+  employment_type   String
+  skills            String[]
+  comp_min          Int?
+  comp_max          Int?
+  automatable_share Decimal? @default(0) @db.Decimal(4, 3)
+  status            String   @default("open")
+  created_by        String?  @db.Uuid
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  author      Profile?     @relation(fields: [created_by], references: [id])
+  matches     MatchScore[]
+  decisions   Decision[]
+  agent_runs  AgentRun[]
+
+  @@map("requisitions")
+}
+
+model Candidate {
+  id             String    @id @default(uuid()) @db.Uuid
+  full_name      String
+  email          String
+  phone          String?
+  location       String?
+  pool_type      String
+  source_channel String?
+  resume_text    String?
+  expected_comp  Int?
+  available_from DateTime? @db.Date
+  id_doc_hash    String?
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  employment  EmploymentHistory[]
+  credentials Credential[]
+  verifications Verification[]
+  fraud_signals FraudSignal[]
+  assessments   SkillAssessment[]
+  passports     TrustPassport[]
+  matches       MatchScore[]
+  agent_runs    AgentRun[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([id_doc_hash])
+  @@map("candidates")
+}
+
+model EmploymentHistory {
+  id           String    @id @default(uuid()) @db.Uuid
+  candidate_id String    @db.Uuid
+  employer     String
+  title        String
+  start_date   DateTime  @db.Date
+  end_date     DateTime? @db.Date
+  full_time    Boolean?  @default(true)
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("employment_history")
+}
+
+model Credential {
+  id           String @id @default(uuid()) @db.Uuid
+  candidate_id String @db.Uuid
+  type         String
+  issuer       String?
+  claimed_year Int?
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("credentials")
+}
+
+model Verification {
+  id           String   @id @default(uuid()) @db.Uuid
+  candidate_id String   @db.Uuid
+  type         String
+  status       String
+  evidence     Json?    @default("{}")
+  provider     String   @default("simulated")
+  verified_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("verifications")
+}
+
+model FraudSignal {
+  id           String   @id @default(uuid()) @db.Uuid
+  candidate_id String   @db.Uuid
+  type         String
+  severity     String
+  evidence     Json?    @default("{}")
+  detected_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("fraud_signals")
+}
+
+model SkillAssessment {
+  id           String   @id @default(uuid()) @db.Uuid
+  candidate_id String   @db.Uuid
+  skill        String
+  score        Decimal? @db.Decimal(5, 2)
+  proof        Json?    @default("{}")
+  assessed_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("skill_assessments")
+}
+
+model TrustPassport {
+  id           String   @id @default(uuid()) @db.Uuid
+  candidate_id String   @db.Uuid
+  payload      Json
+  signature    String
+  issued_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("passports")
+}
+
+model Benchmark {
+  id               String @id @default(uuid()) @db.Uuid
+  role             String
+  location         String
+  comp_p25         Int?
+  comp_p50         Int?
+  comp_p75         Int?
+  avg_days_to_fill Int?
+
+  @@map("benchmarks")
+}
+
+model ChannelStat {
+  id         String @id @default(uuid()) @db.Uuid
+  channel    String
+  applicants Int?   @default(0)
+  interviews Int?   @default(0)
+  hires      Int?   @default(0)
+
+  @@map("channel_stats")
+}
+
+model MatchScore {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  requisition_id     String   @db.Uuid
+  candidate_id       String   @db.Uuid
+  skill_match        Decimal? @default(0) @db.Decimal(4, 3)
+  trust_score        Decimal? @default(0) @db.Decimal(5, 2)
+  comp_fit           Decimal? @default(0) @db.Decimal(4, 3)
+  location_fit       Decimal? @default(0) @db.Decimal(4, 3)
+  availability       Decimal? @default(0) @db.Decimal(4, 3)
+  channel_conversion Decimal? @default(0) @db.Decimal(4, 3)
+  probability        Decimal? @default(0) @db.Decimal(4, 3)
+  signals            Json?    @default("{}")
+  computed_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  requisition Requisition @relation(fields: [requisition_id], references: [id], onDelete: Cascade)
+  candidate   Candidate   @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@unique([requisition_id, candidate_id])
+  @@index([requisition_id])
+  @@map("match_scores")
+}
+
+model Decision {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  requisition_id String   @db.Uuid
+  recommendation String
+  rationale      Json?    @default("{}")
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  requisition Requisition @relation(fields: [requisition_id], references: [id], onDelete: Cascade)
+
+  @@map("decisions")
+}
+
+model AgentRun {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agent          String
+  requisition_id String?  @db.Uuid
+  candidate_id   String?  @db.Uuid
+  input          Json?    @default("{}")
+  output         Json?    @default("{}")
+  model          String?
+  confidence     Decimal? @db.Decimal(4, 3)
+  status         String   @default("pending")
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  requisition Requisition? @relation(fields: [requisition_id], references: [id])
+  candidate   Candidate?   @relation(fields: [candidate_id], references: [id])
+  approvals   Approval[]
+
+  @@map("agent_runs")
+}
+
+model Approval {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agent_run_id String    @db.Uuid
+  state        String    @default("pending")
+  approver_id  String?   @db.Uuid
+  reason       String?
+  decided_at   DateTime? @db.Timestamptz(6)
+
+  agent_run AgentRun @relation(fields: [agent_run_id], references: [id], onDelete: Cascade)
+  approver  Profile? @relation(fields: [approver_id], references: [id])
+
+  @@map("approvals")
+}
+
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+  ts          DateTime @default(now()) @db.Timestamptz(6)
+  actor_type  String
+  actor_id    String
+  action      String
+  entity_type String
+  entity_id   String
+  payload     Json?    @default("{}")
+  prev_hash   String   @default("")
+  hash        String
+
+  @@index([entity_type, entity_id])
+  @@index([ts(sort: Desc)])
+  @@map("audit_log")
+}
