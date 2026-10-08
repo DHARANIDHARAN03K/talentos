@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma'
 import { TrustBadge } from '@/components/ui/TrustBadge'
 import { SimulatedBadge } from '@/components/ui/SimulatedBadge'
+import { NewCandidateModal } from '@/components/forms/NewCandidateModal'
 import {
   ShieldCheck,
   AlertTriangle,
@@ -51,6 +52,7 @@ export default async function TalentPoolPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <NewCandidateModal />
           <SimulatedBadge label="Identity & Credential Checkers" />
         </div>
       </div>

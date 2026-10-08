@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma'
 import Link from 'next/link'
 import { MapPin, Briefcase, Users, ArrowRight, ShieldAlert, Plus, Sparkles, Building2 } from 'lucide-react'
 import { SimulatedBadge } from '@/components/ui/SimulatedBadge'
+import { NewRequisitionModal } from '@/components/forms/NewRequisitionModal'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,7 @@ export default async function RequisitionsPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <NewRequisitionModal />
           <SimulatedBadge label="ATS Sync (Workday / Greenhouse)" />
         </div>
       </div>

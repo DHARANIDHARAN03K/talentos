@@ -1,13 +1,19 @@
 import prisma from '@/lib/prisma'
-import { CheckSquare, UserCheck, ShieldAlert, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { CheckSquare } from 'lucide-react'
 import { SimulatedBadge } from '@/components/ui/SimulatedBadge'
+import { ApprovalActionButton } from '@/components/forms/ApprovalActionButton'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ApprovalsPage() {
   const approvals = await prisma.approval.findMany({
-    orderBy: { created_at: 'desc' },
-    include: { candidate: true },
+    include: {
+      agent_run: {
+        include: {
+          candidate: true,
+        },
+      },
+    },
   })
 
   return (
@@ -42,31 +48,27 @@ export default async function ApprovalsPage() {
         <div className="divide-y divide-slate-200">
           {approvals.map((appr) => {
             const isPending = appr.state === 'pending'
+            const candidateName = appr.agent_run?.candidate?.full_name || 'System Action'
+            const agentName = appr.agent_run?.agent || 'Recruiter Copilot'
+
             return (
               <div key={appr.id} className="p-5 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0F172A] text-sm">{appr.action}</span>
+                    <span className="font-bold text-[#0F172A] text-sm">{agentName}</span>
                     <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
                       isPending ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800'
                     }`}>
                       {appr.state}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600">Candidate: <strong className="text-slate-800">{appr.candidate?.full_name || 'System Queue'}</strong></p>
-                  <p className="text-[11px] text-slate-400 font-mono">Payload: {JSON.stringify(appr.payload)}</p>
+                  <p className="text-xs text-slate-600">Target Candidate: <strong className="text-slate-800">{candidateName}</strong></p>
+                  <p className="text-[11px] text-slate-400 font-mono">Agent Input: {JSON.stringify(appr.agent_run?.input || {})}</p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
                   {isPending ? (
-                    <>
-                      <button className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md transition-colors flex items-center gap-1">
-                        <CheckCircle2 size={13} /> Approve Action
-                      </button>
-                      <button className="text-xs font-bold bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors flex items-center gap-1">
-                        <XCircle size={13} /> Reject
-                      </button>
-                    </>
+                    <ApprovalActionButton approvalId={appr.id} />
                   ) : (
                     <span className="text-xs text-slate-400 font-mono">Logged & Chained ✓</span>
                   )}
