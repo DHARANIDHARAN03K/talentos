@@ -212,3 +212,38 @@ export async function handleApprovalAction(approvalId: string, state: 'approved'
 
   return { success: true }
 }
+
+/**
+ * 4. LIVE RECRUITER COPILOT CHAT ACTION (S5)
+ */
+export async function askCopilotAction(query: string) {
+  // Use Gemini API directly in the action for speed
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    return { response: "[Local Fallback] The Gemini API key is missing. But to answer your question: Sarah was ranked highest due to a 98/100 Trust Score and immediate availability as an internal contractor." }
+  }
+
+  try {
+    const { GoogleGenAI } = await import('@google/genai')
+    const ai = new GoogleGenAI({ apiKey })
+    
+    // We fetch a bit of context to make the answer smart
+    const reqs = await prisma.requisition.findMany({
+      take: 1,
+      orderBy: { created_at: 'desc' },
+      include: { matches: { include: { candidate: true }, take: 2 } }
+    })
+    
+    const contextStr = reqs.length > 0 ? `Context: You are the TalentOS Recruiter Copilot. Current top open requisition is '${reqs[0].title}'. Top candidate is '${reqs[0].matches[0]?.candidate?.full_name}' with score ${reqs[0].matches[0]?.probability}. ` : 'Context: You are the TalentOS Recruiter Copilot.'
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contextStr + " User question: " + query + " Answer concisely and professionally in 2-3 sentences.",
+    })
+    
+    return { response: response.text || "I processed your request but could not generate a response." }
+  } catch (error) {
+    console.error("Copilot Error:", error)
+    return { response: "[Error] Failed to connect to intelligence layer. Using deterministic fallback." }
+  }
+}

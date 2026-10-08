@@ -12,6 +12,7 @@ import {
   ScrollText,
   ShieldCheck,
   ChevronRight,
+  Server
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/agents', label: 'Agent Executions', icon: Bot, badge: null },
   { href: '/approvals', label: 'Human Approvals', icon: CheckSquare, badge: 'Queue' },
   { href: '/audit', label: 'Audit Ledger', icon: ScrollText, badge: 'SHA-256' },
+  { href: '/integrations', label: 'ATS Integrations', icon: Server, badge: 'Sync' },
 ]
 
 export function Sidebar() {
