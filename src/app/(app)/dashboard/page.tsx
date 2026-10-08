@@ -298,7 +298,9 @@ export default async function DashboardPage() {
               </div>
               <h3 className="text-sm font-bold text-[#0F172A]">Market Benchmark Intelligence</h3>
             </div>
-            <SimulatedBadge label="External Oracle" />
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border rounded bg-amber-50 text-amber-700 border-amber-300">
+              ⚡ Simulated · External Oracle
+            </span>
           </div>
 
           <div className="space-y-4">

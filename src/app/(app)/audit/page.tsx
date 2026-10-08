@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { createServiceClient } from '@/lib/supabase/server'
 import { AuditRow, ChainStatus } from '@/components/ui/AuditRow'
 import { verifyChain } from '@/lib/audit'
 import { ScrollText, ShieldCheck } from 'lucide-react'
@@ -11,9 +12,10 @@ export default async function AuditPage() {
     orderBy: { ts: 'desc' },
   })
 
-  // Format rows for verification
-  let isChainValid = true
-  let firstBadIndex: number | undefined
+  const supabase = await createServiceClient()
+  const { valid, firstBadId } = await verifyChain(supabase)
+  const isChainValid = valid
+  // Chain verification status will be shown via ChainStatus component
 
   return (
     <div className="space-y-6">
@@ -25,7 +27,7 @@ export default async function AuditPage() {
             SHA-256 Hash-chained tamper-evident record of all AI actions, verifications & human decisions
           </p>
         </div>
-        <ChainStatus valid={isChainValid} totalRows={auditLogs.length} firstBadId={firstBadIndex} />
+        <ChainStatus valid={isChainValid} totalRows={auditLogs.length} firstBadId={firstBadId} />
       </div>
 
       {/* Audit Log Card */}
