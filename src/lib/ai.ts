@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 
-const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
+const ai = process.env.NEXT_PUBLIC_GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY }) : null;
 
 export async function generateOutreachDraft(candidateName: string, role: string, score: number): Promise<string> {
   const prompt = `Write a short, highly professional outreach email to a candidate named ${candidateName} for the role of ${role}. They matched our criteria at ${score}%. Do not use buzzwords or hype. Be direct, polite, and invite them to a brief initial chat. Limit to 3 short paragraphs.`;

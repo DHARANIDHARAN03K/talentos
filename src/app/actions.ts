@@ -243,7 +243,7 @@ export async function handleApprovalAction(approvalId: string, state: 'approved'
  */
 export async function askCopilotAction(query: string) {
   // Use Gemini API directly in the action for speed
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
   if (!apiKey) {
     return { response: "[Local Fallback] The Gemini API key is missing. But to answer your question: Sarah was ranked highest due to a 98/100 Trust Score and immediate availability as an internal contractor." }
   }
