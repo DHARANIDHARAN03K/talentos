@@ -219,7 +219,7 @@ export default async function DashboardPage() {
               <h3 className="text-sm font-bold text-[#0F172A]">Active Fraud & Trust Contradictions</h3>
             </div>
             <Link href="/pool" className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-              <span>View All 145</span>
+              <span>View All {candidateCount}</span>
               <ArrowRight size={12} />
             </Link>
           </div>

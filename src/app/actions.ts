@@ -138,6 +138,16 @@ export async function createCandidateAction(formData: FormData) {
   const expectedComp = parseInt((formData.get('expectedComp') as string) || '1200000', 10)
   const isDemoTrap = formData.get('isDemoTrap') === 'true'
 
+  // 1. Real Trust Engine Check: Look for duplicates
+  const existingMatches = await prisma.candidate.findMany({
+    where: {
+      OR: [
+        { email },
+        { phone: phone || '___NO_MATCH___' }
+      ]
+    }
+  })
+
   // Insert Candidate
   const candidate = await prisma.candidate.create({
     data: {
@@ -151,13 +161,28 @@ export async function createCandidateAction(formData: FormData) {
     },
   })
 
-  // If user selected demo trap, plant a live fraud trap signal
-  if (isDemoTrap) {
+  // 2. Real Fraud Logic: if a match exists, flag it
+  if (existingMatches.length > 0) {
+    const matchedNames = existingMatches.map(m => m.full_name).join(', ')
     await prisma.fraudSignal.create({
       data: {
         candidate_id: candidate.id,
         type: 'DUPLICATE_PROFILE',
-        severity: 'HIGH',
+        severity: 'high',
+        evidence: {
+          reason: `Real-time detection: Same email (${email}) or phone (${phone}) found on existing profiles: ${matchedNames}.`
+        },
+      },
+    })
+  }
+
+  // If user explicitly selected demo trap, plant a simulated trap signal
+  if (isDemoTrap && existingMatches.length === 0) {
+    await prisma.fraudSignal.create({
+      data: {
+        candidate_id: candidate.id,
+        type: 'DUPLICATE_PROFILE',
+        severity: 'high',
         evidence: {
           reason: `Flagged: Matching phone number (${phone}) & 91% resume text similarity with another pool profile.`,
           matched_phone: phone,

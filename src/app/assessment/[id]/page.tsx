@@ -54,9 +54,9 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
               <ShieldCheck size={16} className="text-emerald-600" />
               Answers are securely hashed
             </div>
-            <button className="bg-[#0B1B3A] hover:bg-[#16305F] text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-[#C9A227]" />
-              Submit Assessment (Demo)
+            <button disabled className="bg-slate-200 text-slate-500 px-6 py-2.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 cursor-not-allowed">
+              <CheckCircle2 size={16} className="text-slate-400" />
+              Simulated Assessment Locked
             </button>
           </div>
         </div>
