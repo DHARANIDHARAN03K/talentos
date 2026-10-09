@@ -123,89 +123,59 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Cards: Scannable 4-Column Grid */}
+      {/* KPI Cards: Scannable 4-Column Grid - Now Actionable */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="talentos-card relative overflow-hidden">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500">{s.label}</p>
-                <p className="text-2xl font-bold text-[#0F172A] mt-1 tracking-tight">{s.value}</p>
-                <p className="text-[11px] text-slate-400 mt-1">{s.subtext}</p>
-              </div>
-              <div className={`p-2.5 rounded-lg border ${s.iconBg}`}>
-                <s.icon size={18} />
-              </div>
+        <Link href="/requisitions" className="talentos-card relative overflow-hidden block hover:border-blue-300 transition-colors cursor-pointer group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500 group-hover:text-blue-600 transition-colors">Open Requisitions</p>
+              <p className="text-2xl font-bold text-[#0F172A] mt-1 tracking-tight">{reqCount}</p>
+              <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">Manage Demands <ArrowRight size={10} /></p>
+            </div>
+            <div className="p-2.5 rounded-lg border bg-blue-50 text-blue-600 border-blue-100">
+              <BarChart3 size={18} />
             </div>
           </div>
-        ))}
+        </Link>
+        <Link href="/pool" className="talentos-card relative overflow-hidden block hover:border-slate-300 transition-colors cursor-pointer group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500 group-hover:text-slate-800 transition-colors">Talent Pool Verified</p>
+              <p className="text-2xl font-bold text-[#0F172A] mt-1 tracking-tight">{candidateCount}</p>
+              <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">View Supply <ArrowRight size={10} /></p>
+            </div>
+            <div className="p-2.5 rounded-lg border bg-slate-100 text-slate-800 border-slate-200">
+              <Users size={18} />
+            </div>
+          </div>
+        </Link>
+        <Link href="/pool" className="talentos-card relative overflow-hidden block hover:border-red-300 transition-colors cursor-pointer group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500 group-hover:text-red-600 transition-colors">Trust & Fraud Alerts</p>
+              <p className="text-2xl font-bold text-[#0F172A] mt-1 tracking-tight">{fraudSignalsCount}</p>
+              <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">Review Flags <ArrowRight size={10} /></p>
+            </div>
+            <div className="p-2.5 rounded-lg border bg-red-50 text-red-600 border-red-100">
+              <AlertTriangle size={18} />
+            </div>
+          </div>
+        </Link>
+        <Link href="/approvals" className="talentos-card relative overflow-hidden block hover:border-amber-300 transition-colors cursor-pointer group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500 group-hover:text-amber-600 transition-colors">Pending Approvals</p>
+              <p className="text-2xl font-bold text-[#0F172A] mt-1 tracking-tight">{pendingApprovalsCount}</p>
+              <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1 font-semibold">Action Required <ArrowRight size={10} /></p>
+            </div>
+            <div className="p-2.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-100">
+              <Clock size={18} />
+            </div>
+          </div>
+        </Link>
       </div>
 
-      {/* 3-Layer Visual Pipeline: Trust, Intel, Execution */}
-      <div className="talentos-card bg-white border-slate-200 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Layers size={14} className="text-[#0B1B3A]" />
-            Operating System Flow State
-          </h3>
-          <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-            All Layers Active & Audited
-          </span>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          {/* Layer 1: Trust */}
-          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-[#0B1B3A]">1. TRUST LAYER</span>
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                Verified
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 leading-snug">
-              Continuous identity verification, duplicate detection & fraud traps.
-            </p>
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Planted Traps Caught:</span>
-              <span className="font-bold text-red-600">3 flagged</span>
-            </div>
-          </div>
-
-          {/* Layer 2: Intelligence */}
-          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-[#0B1B3A]">2. INTELLIGENCE LAYER</span>
-              <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
-                Scored
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 leading-snug">
-              Multi-signal hiring probability & Build | Buy | Borrow recommendation engine.
-            </p>
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Borrow Recommendation:</span>
-              <span className="font-bold text-blue-600">92% Match</span>
-            </div>
-          </div>
-
-          {/* Layer 3: Execution */}
-          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-[#0B1B3A]">3. EXECUTION LAYER</span>
-              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
-                Governed
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 leading-snug">
-              AI screening & outreach copilots requiring human approval & exception handling.
-            </p>
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Autonomous Actions:</span>
-              <span className="font-bold text-emerald-600">0 (100% Governed)</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Panels: Active Fraud Detection & Requisition Match Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -296,6 +266,60 @@ export default async function DashboardPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 3-Layer Visual Pipeline: Trust, Intel, Execution */}
+      <div className="talentos-card bg-slate-50 border-slate-200 shadow-sm mt-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <Layers size={14} className="text-[#0B1B3A]" />
+            System Architecture Reference (For Demo)
+          </h3>
+          <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+            All Layers Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          {/* Layer 1: Trust */}
+          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-[#0F172A]">1. TRUST LAYER</span>
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                Verified
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-snug">
+              Continuous identity verification, duplicate detection & fraud traps.
+            </p>
+          </div>
+
+          {/* Layer 2: Intelligence */}
+          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-[#0F172A]">2. INTELLIGENCE</span>
+              <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                Scored
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-snug">
+              Multi-signal hiring probability & Build | Buy | Borrow engine.
+            </p>
+          </div>
+
+          {/* Layer 3: Execution */}
+          <div className="p-3.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-[#0F172A]">3. EXECUTION</span>
+              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                Governed
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-snug">
+              AI screening & outreach requiring human approval.
+            </p>
           </div>
         </div>
       </div>
